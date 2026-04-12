@@ -51,6 +51,94 @@ public class UserAccount {
     @OneToMany(mappedBy = "targetUser")
     private List<AuditLog> affectedAuditLogs = new ArrayList<>();
 
-    protected UserAccount() {
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<SimulationScenario> getCreatedScenarios() {
+        return createdScenarios;
+    }
+
+    public void setCreatedScenarios(List<SimulationScenario> createdScenarios) {
+        this.createdScenarios = createdScenarios;
+    }
+
+    public List<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(List<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
+
+    public List<UserRole> getAssignedRoles() {
+        return assignedRoles;
+    }
+
+    public void setAssignedRoles(List<UserRole> assignedRoles) {
+        this.assignedRoles = assignedRoles;
+    }
+
+    public List<AuditLog> getPerformedAuditLogs() {
+        return performedAuditLogs;
+    }
+
+    public void setPerformedAuditLogs(List<AuditLog> performedAuditLogs) {
+        this.performedAuditLogs = performedAuditLogs;
+    }
+
+    public List<AuditLog> getAffectedAuditLogs() {
+        return affectedAuditLogs;
+    }
+
+    public void setAffectedAuditLogs(List<AuditLog> affectedAuditLogs) {
+        this.affectedAuditLogs = affectedAuditLogs;
+    }
+
+    public UserAccount() {
     }
 }

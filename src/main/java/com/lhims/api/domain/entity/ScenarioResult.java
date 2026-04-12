@@ -39,6 +39,62 @@ public class ScenarioResult {
     @Column(name = "impact_delta")
     private Double impactDelta;
 
+    public Long getResultId() {
+        return resultId;
+    }
+
+    public void setResultId(Long resultId) {
+        this.resultId = resultId;
+    }
+
+    public SimulationScenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(SimulationScenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public Double getSimulatedHai() {
+        return simulatedHai;
+    }
+
+    public void setSimulatedHai(Double simulatedHai) {
+        this.simulatedHai = simulatedHai;
+    }
+
+    public Double getSimulatedRvi() {
+        return simulatedRvi;
+    }
+
+    public void setSimulatedRvi(Double simulatedRvi) {
+        this.simulatedRvi = simulatedRvi;
+    }
+
+    public Double getSimulatedCiri() {
+        return simulatedCiri;
+    }
+
+    public void setSimulatedCiri(Double simulatedCiri) {
+        this.simulatedCiri = simulatedCiri;
+    }
+
+    public Double getImpactDelta() {
+        return impactDelta;
+    }
+
+    public void setImpactDelta(Double impactDelta) {
+        this.impactDelta = impactDelta;
+    }
+
     protected ScenarioResult() {
     }
 }

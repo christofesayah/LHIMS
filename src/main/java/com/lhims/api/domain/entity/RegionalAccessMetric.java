@@ -35,6 +35,54 @@ public class RegionalAccessMetric {
     @Column(name = "icu_beds_per_capita")
     private Double icuBedsPerCapita;
 
+    public Long getAccessMetricId() {
+        return accessMetricId;
+    }
+
+    public void setAccessMetricId(Long accessMetricId) {
+        this.accessMetricId = accessMetricId;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public String getReportingPeriod() {
+        return reportingPeriod;
+    }
+
+    public void setReportingPeriod(String reportingPeriod) {
+        this.reportingPeriod = reportingPeriod;
+    }
+
+    public Double getHospitalsPerCapita() {
+        return hospitalsPerCapita;
+    }
+
+    public void setHospitalsPerCapita(Double hospitalsPerCapita) {
+        this.hospitalsPerCapita = hospitalsPerCapita;
+    }
+
+    public Double getDoctorsPerCapita() {
+        return doctorsPerCapita;
+    }
+
+    public void setDoctorsPerCapita(Double doctorsPerCapita) {
+        this.doctorsPerCapita = doctorsPerCapita;
+    }
+
+    public Double getIcuBedsPerCapita() {
+        return icuBedsPerCapita;
+    }
+
+    public void setIcuBedsPerCapita(Double icuBedsPerCapita) {
+        this.icuBedsPerCapita = icuBedsPerCapita;
+    }
+
     protected RegionalAccessMetric() {
     }
 }

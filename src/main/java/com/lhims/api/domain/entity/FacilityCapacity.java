@@ -47,6 +47,70 @@ public class FacilityCapacity {
     @Column(name = "operational_status")
     private OperationalStatus operationalStatus;
 
-    protected FacilityCapacity() {
+    public Long getCapacityId() {
+        return capacityId;
+    }
+
+    public void setCapacityId(Long capacityId) {
+        this.capacityId = capacityId;
+    }
+
+    public HealthFacility getFacility() {
+        return facility;
+    }
+
+    public void setFacility(HealthFacility facility) {
+        this.facility = facility;
+    }
+
+    public LocalDate getReportingDate() {
+        return reportingDate;
+    }
+
+    public void setReportingDate(LocalDate reportingDate) {
+        this.reportingDate = reportingDate;
+    }
+
+    public Integer getTotalBeds() {
+        return totalBeds;
+    }
+
+    public void setTotalBeds(Integer totalBeds) {
+        this.totalBeds = totalBeds;
+    }
+
+    public Integer getIcuBeds() {
+        return icuBeds;
+    }
+
+    public void setIcuBeds(Integer icuBeds) {
+        this.icuBeds = icuBeds;
+    }
+
+    public Integer getDoctorsCount() {
+        return doctorsCount;
+    }
+
+    public void setDoctorsCount(Integer doctorsCount) {
+        this.doctorsCount = doctorsCount;
+    }
+
+    public Integer getNursesCount() {
+        return nursesCount;
+    }
+
+    public void setNursesCount(Integer nursesCount) {
+        this.nursesCount = nursesCount;
+    }
+
+    public OperationalStatus getOperationalStatus() {
+        return operationalStatus;
+    }
+
+    public void setOperationalStatus(OperationalStatus operationalStatus) {
+        this.operationalStatus = operationalStatus;
+    }
+
+    public FacilityCapacity() {
     }
 }

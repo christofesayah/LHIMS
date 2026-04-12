@@ -51,6 +51,78 @@ public class ComputedScore {
     @Column(name = "last_computed_at")
     private LocalDateTime lastComputedAt;
 
-    protected ComputedScore() {
+    public Long getScoreId() {
+        return scoreId;
+    }
+
+    public void setScoreId(Long scoreId) {
+        this.scoreId = scoreId;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public SimulationScenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(SimulationScenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public String getReportingPeriod() {
+        return reportingPeriod;
+    }
+
+    public void setReportingPeriod(String reportingPeriod) {
+        this.reportingPeriod = reportingPeriod;
+    }
+
+    public Double getHaiScore() {
+        return haiScore;
+    }
+
+    public void setHaiScore(Double haiScore) {
+        this.haiScore = haiScore;
+    }
+
+    public Double getRviScore() {
+        return rviScore;
+    }
+
+    public void setRviScore(Double rviScore) {
+        this.rviScore = rviScore;
+    }
+
+    public Double getCiriScore() {
+        return ciriScore;
+    }
+
+    public void setCiriScore(Double ciriScore) {
+        this.ciriScore = ciriScore;
+    }
+
+    public RiskCategory getRiskCategory() {
+        return riskCategory;
+    }
+
+    public void setRiskCategory(RiskCategory riskCategory) {
+        this.riskCategory = riskCategory;
+    }
+
+    public LocalDateTime getLastComputedAt() {
+        return lastComputedAt;
+    }
+
+    public void setLastComputedAt(LocalDateTime lastComputedAt) {
+        this.lastComputedAt = lastComputedAt;
+    }
+
+    public ComputedScore() {
     }
 }

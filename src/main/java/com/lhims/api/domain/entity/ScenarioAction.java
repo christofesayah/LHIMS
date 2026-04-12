@@ -44,6 +44,62 @@ public class ScenarioAction {
     @Column(name = "new_value", columnDefinition = "text")
     private String newValue;
 
-    protected ScenarioAction() {
+    public Long getActionId() {
+        return actionId;
+    }
+
+    public void setActionId(Long actionId) {
+        this.actionId = actionId;
+    }
+
+    public SimulationScenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(SimulationScenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public HealthFacility getFacility() {
+        return facility;
+    }
+
+    public void setFacility(HealthFacility facility) {
+        this.facility = facility;
+    }
+
+    public ScenarioActionType getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(ScenarioActionType actionType) {
+        this.actionType = actionType;
+    }
+
+    public String getOldValue() {
+        return oldValue;
+    }
+
+    public void setOldValue(String oldValue) {
+        this.oldValue = oldValue;
+    }
+
+    public String getNewValue() {
+        return newValue;
+    }
+
+    public void setNewValue(String newValue) {
+        this.newValue = newValue;
+    }
+
+    public ScenarioAction() {
     }
 }

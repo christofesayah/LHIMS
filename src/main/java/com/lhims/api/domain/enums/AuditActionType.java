@@ -5,6 +5,7 @@ public enum AuditActionType {
     UPDATE,
     DELETE,
     LOGIN,
+    COMPUTE,
     ASSIGN_ROLE,
     REVOKE_ROLE
 }

@@ -32,6 +32,10 @@ public class AuditLog {
     @JoinColumn(name = "target_user_id")
     private UserAccount targetUser;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "action_type", nullable = false)
     private AuditActionType actionType;
@@ -57,6 +61,102 @@ public class AuditLog {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    protected AuditLog() {
+    public Long getAuditId() {
+        return auditId;
+    }
+
+    public void setAuditId(Long auditId) {
+        this.auditId = auditId;
+    }
+
+    public UserAccount getActorUser() {
+        return actorUser;
+    }
+
+    public void setActorUser(UserAccount actorUser) {
+        this.actorUser = actorUser;
+    }
+
+    public UserAccount getTargetUser() {
+        return targetUser;
+    }
+
+    public void setTargetUser(UserAccount targetUser) {
+        this.targetUser = targetUser;
+    }
+
+    public AuditActionType getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(AuditActionType actionType) {
+        this.actionType = actionType;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getOldValue() {
+        return oldValue;
+    }
+
+    public void setOldValue(String oldValue) {
+        this.oldValue = oldValue;
+    }
+
+    public String getNewValue() {
+        return newValue;
+    }
+
+    public void setNewValue(String newValue) {
+        this.newValue = newValue;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public AuditLog() {
     }
 }

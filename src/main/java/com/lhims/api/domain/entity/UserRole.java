@@ -36,6 +36,46 @@ public class UserRole {
     @JoinColumn(name = "assigned_by_user_id")
     private UserAccount assignedByUser;
 
-    protected UserRole() {
+    public Long getUserRoleId() {
+        return userRoleId;
+    }
+
+    public void setUserRoleId(Long userRoleId) {
+        this.userRoleId = userRoleId;
+    }
+
+    public UserAccount getUser() {
+        return user;
+    }
+
+    public void setUser(UserAccount user) {
+        this.user = user;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public UserAccount getAssignedByUser() {
+        return assignedByUser;
+    }
+
+    public void setAssignedByUser(UserAccount assignedByUser) {
+        this.assignedByUser = assignedByUser;
+    }
+
+    public UserRole() {
     }
 }
