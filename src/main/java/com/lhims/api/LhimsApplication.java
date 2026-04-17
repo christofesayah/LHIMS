@@ -9,5 +9,4 @@ public class LhimsApplication {
     public static void main(String[] args) {
         SpringApplication.run(LhimsApplication.class, args);
     }
-
 }

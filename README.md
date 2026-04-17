@@ -79,6 +79,19 @@ This project now includes a role-aware Spring Boot API service layer (controller
 - If FastAPI is unavailable, compute/recommend calls gracefully degrade to persisted DB data/fallbacks.
 - Role checks are enforced with `@PreAuthorize` and JWT authorities.
 
+## Service-layer tests to keep API + DB behavior reliable
+
+Add/keep the following automated coverage as the minimum backend safety net:
+
+- **Unit tests (Mockito)** for service logic branches and side effects:
+  - `AuthServiceTest`: login success path, role mismatch rejection, audit log trigger.
+  - `ScoreServiceTest`: compute flow, medium->high notification trigger, non-escalation no-notification path.
+- **Controller/security integration tests (`@SpringBootTest` + `MockMvc`)**:
+  - JWT-protected route access per role (`MINISTRY_OFFICIAL`, `HOSPITAL_ADMIN`, `PUBLIC`).
+  - 401/403 behavior when token is missing/invalid/insufficient role.
+- **Repository slice tests (`@DataJpaTest`)**:
+  - Critical query methods used by scoring/audit flow (latest score per region, audit filters by actor/region).
+
 ## Configuration
 
 Main app config: `src/main/resources/application.properties`
@@ -111,4 +124,47 @@ Test config: `src/test/resources/application.properties`
 mvnw.cmd test
 mvnw.cmd spring-boot:run
 mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=flyway-seed
+```
+
+## Python analytics service (separate runtime)
+
+Python analytics now lives in **`analytics-service/`** as an independent FastAPI app (not embedded in Spring Boot):
+
+- `POST /compute/{region_id}`
+- `POST /compute/scenario/{scenario_id}`
+- `GET /recommend`
+- `GET /health`
+
+Current analytics pipeline:
+
+- Cleans raw rows (drops invalid negative/non-finite values, deduplicates repeated records)
+- Standardizes district names
+- Converts count indicators to per-capita values
+- Uses min-max normalization with NumPy
+- Computes `HAI = mean(PHC, Hospitals, Workforce)` and `RVI = mean(Poverty, Density)` (refugee indicator excluded)
+- Computes `CIRI = RVI - HAI`
+- Computes dynamic `P33`/`P67` using NumPy percentiles for risk classification
+
+Local setup:
+
+```bat
+cd analytics-service
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+## Docker (separated services)
+
+`compose.yaml` now runs three services with clean boundaries:
+
+- `db` (PostgreSQL + PostGIS)
+- `analytics` (FastAPI on 8000)
+- `api` (Spring Boot container on 8080, exposed on host `${API_PORT:-8081}` by default; calls analytics via `ANALYTICS_BASE_URL=http://analytics:8000`)
+
+Run:
+
+```bat
+docker compose up --build
 ```

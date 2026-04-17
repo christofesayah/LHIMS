@@ -1,9 +1,10 @@
 package com.lhims.api.repository;
 
-import com.lhims.api.domain.entity.Region;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.lhims.api.domain.entity.Region;
 
 public interface RegionRepository extends JpaRepository<Region, Long> {
     List<Region> findByNameContainingIgnoreCase(String name);

@@ -1,6 +1,8 @@
 package com.lhims.api.integration;
 
-import com.lhims.api.web.dto.ScenarioDtos;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -9,8 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.List;
+import com.lhims.api.web.dto.ScenarioDtos;
 
 @Component
 public class FastApiAnalyticsClient implements AnalyticsClient {

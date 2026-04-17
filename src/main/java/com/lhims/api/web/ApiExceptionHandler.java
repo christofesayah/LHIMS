@@ -1,22 +1,29 @@
 package com.lhims.api.web;
 
-import com.lhims.api.exception.BadRequestException;
-import com.lhims.api.exception.NotFoundException;
+import java.time.LocalDateTime;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import com.lhims.api.exception.BadRequestException;
+import com.lhims.api.exception.NotFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         return error(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 

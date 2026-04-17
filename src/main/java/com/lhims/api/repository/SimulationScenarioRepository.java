@@ -1,9 +1,10 @@
 package com.lhims.api.repository;
 
-import com.lhims.api.domain.entity.SimulationScenario;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.lhims.api.domain.entity.SimulationScenario;
 
 public interface SimulationScenarioRepository extends JpaRepository<SimulationScenario, Long> {
     List<SimulationScenario> findByCreatedByUserUserId(Long userId);

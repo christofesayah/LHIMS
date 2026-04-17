@@ -1,9 +1,10 @@
 package com.lhims.api.repository;
 
-import com.lhims.api.domain.entity.ScenarioAction;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.lhims.api.domain.entity.ScenarioAction;
 
 public interface ScenarioActionRepository extends JpaRepository<ScenarioAction, Long> {
     List<ScenarioAction> findByScenarioScenarioId(Long scenarioId);

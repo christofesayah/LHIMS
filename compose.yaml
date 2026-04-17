@@ -1,7 +1,6 @@
 services:
   db:
     image: postgis/postgis:16-3.4
-    container_name: lhims-db
     environment:
       POSTGRES_DB: ${DB_NAME:-lhims_db}
       POSTGRES_USER: ${DB_USER:-lhims_user}
@@ -15,6 +14,50 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  analytics:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-lhims_db}
+      DB_USER: ${DB_USER:-lhims_user}
+      DB_PASS: ${DB_PASS:-lhims_pass}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-lhims_db}
+      DB_USER: ${DB_USER:-lhims_user}
+      DB_PASS: ${DB_PASS:-lhims_pass}
+      ANALYTICS_BASE_URL: http://analytics:8000
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-lhims-jwt-secret-key-min-32-chars!!}
+      APP_JWT_EXPIRATION_SECONDS: ${APP_JWT_EXPIRATION_SECONDS:-86400}
+    ports:
+      - "${API_PORT:-8081}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      analytics:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

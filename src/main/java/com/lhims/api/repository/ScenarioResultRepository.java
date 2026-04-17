@@ -1,9 +1,10 @@
 package com.lhims.api.repository;
 
-import com.lhims.api.domain.entity.ScenarioResult;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.lhims.api.domain.entity.ScenarioResult;
 
 public interface ScenarioResultRepository extends JpaRepository<ScenarioResult, Long> {
     Optional<ScenarioResult> findTopByScenarioScenarioIdOrderByResultIdDesc(Long scenarioId);
