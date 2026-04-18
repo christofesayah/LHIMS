@@ -72,6 +72,15 @@ def to_rate(value: float | None) -> float:
     return clamp(val, 0.0, 1.0)
 
 
+def to_non_negative(value: float | None) -> float:
+    if value is None:
+        return np.nan
+    val = float(value)
+    if not np.isfinite(val) or val < 0:
+        return np.nan
+    return val
+
+
 def min_max_normalize(values: np.ndarray) -> np.ndarray:
     out = np.full(values.shape, np.nan, dtype=float)
     finite = np.isfinite(values)
@@ -96,7 +105,7 @@ def nanmean_or_zero(values: np.ndarray) -> float:
 
 def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], float, float, dict[int, str]]:
     with conn.cursor() as cur:
-        cur.execute("SELECT region_id, name, COALESCE(population, 0) FROM regions")
+        cur.execute("SELECT region_id, name, COALESCE(population, 0) FROM regions WHERE type = 'CAZA'")
         region_rows = cur.fetchall()
         if not region_rows:
             return {}, DEFAULT_P33, DEFAULT_P67, {}
@@ -106,14 +115,14 @@ def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], f
 
         cur.execute(
             """
-            SELECT hf.region_id, fc.facility_id, fc.reporting_date, fc.doctors_count, fc.nurses_count
+            SELECT hf.region_id, fc.facility_id, fc.reporting_date, fc.total_beds, fc.icu_beds, fc.doctors_count, fc.nurses_count
             FROM facility_capacity fc
             JOIN health_facilities hf ON hf.facility_id = fc.facility_id
             """
         )
         capacity_rows = cur.fetchall()
 
-        cur.execute("SELECT region_id, poverty_rate, demographic_pressure FROM regional_vulnerability")
+        cur.execute("SELECT region_id, poverty_rate, mortality_indicator, demographic_pressure FROM regional_vulnerability")
         vulnerability_rows = cur.fetchall()
 
     populations: dict[int, float] = {}
@@ -134,36 +143,47 @@ def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], f
         elif facility_type == "HOSPITAL":
             hospital_ids[region_key].add(int(facility_id))
 
-    latest_by_facility: dict[tuple[int, int], tuple[Any, float]] = {}
-    for region_id, facility_id, reporting_date, doctors_count, nurses_count in capacity_rows:
+    latest_by_facility: dict[tuple[int, int], tuple[Any, float, float, float]] = {}
+    for region_id, facility_id, reporting_date, total_beds, icu_beds, doctors_count, nurses_count in capacity_rows:
         region_key = int(region_id)
         facility_key = int(facility_id)
-        doctors = float(doctors_count or 0)
-        nurses = float(nurses_count or 0)
-        if doctors < 0 or nurses < 0:
+        if doctors_count is None or nurses_count is None or total_beds is None or icu_beds is None:
+            continue
+        doctors = float(doctors_count)
+        nurses = float(nurses_count)
+        beds = float(total_beds)
+        icu = float(icu_beds)
+        if doctors < 0 or nurses < 0 or beds < 0 or icu < 0:
             continue
         workforce = doctors + nurses
         key = (region_key, facility_key)
         previous = latest_by_facility.get(key)
         if previous is None or (reporting_date is not None and reporting_date > previous[0]):
-            latest_by_facility[key] = (reporting_date, workforce)
+            latest_by_facility[key] = (reporting_date, workforce, beds, icu)
 
     workforce_counts: dict[int, float] = {region_id: 0.0 for region_id in populations}
-    for (region_id, _), (_, workforce) in latest_by_facility.items():
+    beds_counts: dict[int, float] = {region_id: 0.0 for region_id in populations}
+    icu_counts: dict[int, float] = {region_id: 0.0 for region_id in populations}
+    for (region_id, _), (_, workforce, beds, icu) in latest_by_facility.items():
         workforce_counts[region_id] = workforce_counts.get(region_id, 0.0) + workforce
+        beds_counts[region_id] = beds_counts.get(region_id, 0.0) + beds
+        icu_counts[region_id] = icu_counts.get(region_id, 0.0) + icu
 
     poverty_samples: dict[int, list[float]] = {region_id: [] for region_id in populations}
+    mortality_samples: dict[int, list[float]] = {region_id: [] for region_id in populations}
     density_samples: dict[int, list[float]] = {region_id: [] for region_id in populations}
-    seen_vuln_rows: set[tuple[int, float, float]] = set()
-    for region_id, poverty_rate, demographic_pressure in vulnerability_rows:
+    seen_vuln_rows: set[tuple[int, float, float, float]] = set()
+    for region_id, poverty_rate, mortality_indicator, demographic_pressure in vulnerability_rows:
         region_key = int(region_id)
         if region_key not in populations:
             continue
         pov = to_rate(poverty_rate)
-        den = to_per_capita(demographic_pressure, populations[region_key])
+        mort = to_rate(mortality_indicator)
+        den = to_non_negative(demographic_pressure)
         dedupe_key = (
             region_key,
             float(np.nan_to_num(pov, nan=-1.0)),
+            float(np.nan_to_num(mort, nan=-1.0)),
             float(np.nan_to_num(den, nan=-1.0)),
         )
         if dedupe_key in seen_vuln_rows:
@@ -171,6 +191,8 @@ def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], f
         seen_vuln_rows.add(dedupe_key)
         if np.isfinite(pov):
             poverty_samples[region_key].append(pov)
+        if np.isfinite(mort):
+            mortality_samples[region_key].append(mort)
         if np.isfinite(den):
             density_samples[region_key].append(den)
 
@@ -187,10 +209,27 @@ def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], f
         [to_per_capita(workforce_counts.get(region_id, 0.0), populations[region_id]) for region_id in region_ids],
         dtype=float,
     )
+    beds_pc = np.array(
+        [to_per_capita(beds_counts.get(region_id, 0.0), populations[region_id]) for region_id in region_ids],
+        dtype=float,
+    )
+    icu_pc = np.array(
+        [to_per_capita(icu_counts.get(region_id, 0.0), populations[region_id]) for region_id in region_ids],
+        dtype=float,
+    )
     poverty = np.array(
         [
             nanmean_or_zero(np.array(poverty_samples.get(region_id, []), dtype=float))
             if poverty_samples.get(region_id)
+            else np.nan
+            for region_id in region_ids
+        ],
+        dtype=float,
+    )
+    mortality = np.array(
+        [
+            nanmean_or_zero(np.array(mortality_samples.get(region_id, []), dtype=float))
+            if mortality_samples.get(region_id)
             else np.nan
             for region_id in region_ids
         ],
@@ -209,16 +248,19 @@ def build_scores(conn: psycopg.Connection) -> tuple[dict[int, dict[str, Any]], f
     phc_norm = min_max_normalize(phc_pc)
     hosp_norm = min_max_normalize(hosp_pc)
     workforce_norm = min_max_normalize(workforce_pc)
+    beds_norm = min_max_normalize(beds_pc)
+    icu_norm = min_max_normalize(icu_pc)
     poverty_norm = min_max_normalize(poverty)
+    mortality_norm = min_max_normalize(mortality)
     density_norm = min_max_normalize(density)
 
     all_scores: dict[int, dict[str, Any]] = {}
     ciri_values: list[float] = []
 
     for idx, region_id in enumerate(region_ids):
-        hai = nanmean_or_zero(np.array([phc_norm[idx], hosp_norm[idx], workforce_norm[idx]], dtype=float))
+        hai = nanmean_or_zero(np.array([phc_norm[idx], hosp_norm[idx], workforce_norm[idx], beds_norm[idx], icu_norm[idx]], dtype=float))
         # Refugee indicator intentionally excluded per project update.
-        rvi = nanmean_or_zero(np.array([poverty_norm[idx], density_norm[idx]], dtype=float))
+        rvi = nanmean_or_zero(np.array([poverty_norm[idx], mortality_norm[idx], density_norm[idx]], dtype=float))
         ciri = float(rvi - hai)
         all_scores[region_id] = {
             "haiScore": round(float(np.clip(hai, 0.0, 1.0)), 4),

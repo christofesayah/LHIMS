@@ -33,3 +33,33 @@ build/
 .env
 .env.*
 !.env.example
+
+# Data sources (raw / do not commit)
+# Raw source files: spreadsheets, CSVs, GeoJSON, shapefiles, geopackages
+/data/**/*.csv
+/data/**/*.xls
+/data/**/*.xlsx
+/data/**/*.json
+/data/**/*.geojson
+/data/**/*.shp
+/data/**/*.gpkg
+
+# Top-level data files
+*.csv
+*.xls
+*.xlsx
+*.json
+*.geojson
+
+# Allow curated processed outputs or importer scripts if needed
+!data/**/processed/
+!data/**/final/
+!data/**/imports/*.py
+
+# Byte-compiled Python files / caches
+__pycache__/
+*.py[cod]
+*.pyc
+# Explicit compiled file example
+main.cpython-313.pyc
+

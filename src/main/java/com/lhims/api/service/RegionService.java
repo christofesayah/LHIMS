@@ -1,16 +1,18 @@
 package com.lhims.api.service;
 
-import com.lhims.api.domain.entity.ComputedScore;
-import com.lhims.api.domain.entity.Region;
-import com.lhims.api.exception.NotFoundException;
-import com.lhims.api.repository.ComputedScoreRepository;
-import com.lhims.api.repository.RegionRepository;
-import com.lhims.api.web.dto.RegionDtos;
+import java.util.List;
+
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.lhims.api.domain.entity.ComputedScore;
+import com.lhims.api.domain.entity.Region;
+import com.lhims.api.domain.enums.RegionType;
+import com.lhims.api.exception.NotFoundException;
+import com.lhims.api.repository.ComputedScoreRepository;
+import com.lhims.api.repository.RegionRepository;
+import com.lhims.api.web.dto.RegionDtos;
 
 @Service
 public class RegionService {
@@ -25,19 +27,20 @@ public class RegionService {
 
     @Transactional(readOnly = true)
     public List<RegionDtos.DistrictSummary> getAllDistricts() {
-        return regionRepository.findAll().stream().map(this::toSummary).toList();
+        return regionRepository.findAllByType(RegionType.CAZA).stream().map(this::toSummary).toList();
     }
 
     @Transactional(readOnly = true)
     public RegionDtos.DistrictDetail getDistrict(Long id) {
-        Region region = regionRepository.findById(id).orElseThrow(() -> new NotFoundException("Region not found"));
+        Region region = regionRepository.findByRegionIdAndType(id, RegionType.CAZA)
+                .orElseThrow(() -> new NotFoundException("Region not found"));
         return toDetail(region);
     }
 
     @Transactional(readOnly = true)
     public RegionDtos.DistrictGeoJsonResponse getGeoJson() {
         GeoJsonWriter writer = new GeoJsonWriter();
-        List<RegionDtos.DistrictGeoJsonFeature> features = regionRepository.findAll().stream()
+        List<RegionDtos.DistrictGeoJsonFeature> features = regionRepository.findAllByType(RegionType.CAZA).stream()
                 .filter(region -> region.getGeometry() != null)
                 .map(region -> new RegionDtos.DistrictGeoJsonFeature(
                         region.getRegionId(),
@@ -50,7 +53,9 @@ public class RegionService {
 
     @Transactional(readOnly = true)
     public List<RegionDtos.DistrictSummary> searchDistricts(String query) {
-        return regionRepository.findByNameContainingIgnoreCase(query).stream().map(this::toSummary).toList();
+        return regionRepository.findByNameContainingIgnoreCaseAndType(query, RegionType.CAZA).stream()
+                .map(this::toSummary)
+                .toList();
     }
 
     @Transactional(readOnly = true)

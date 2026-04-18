@@ -1,10 +1,17 @@
 package com.lhims.api.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.lhims.api.domain.entity.ComputedScore;
 import com.lhims.api.domain.entity.Notification;
 import com.lhims.api.domain.entity.Region;
 import com.lhims.api.domain.entity.UserAccount;
 import com.lhims.api.domain.enums.AuditActionType;
+import com.lhims.api.domain.enums.RegionType;
 import com.lhims.api.domain.enums.RiskCategory;
 import com.lhims.api.exception.NotFoundException;
 import com.lhims.api.integration.AnalyticsClient;
@@ -13,12 +20,8 @@ import com.lhims.api.repository.NotificationRepository;
 import com.lhims.api.repository.RegionRepository;
 import com.lhims.api.repository.UserRepository;
 import com.lhims.api.web.dto.ScoreDtos;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class ScoreService {
@@ -50,7 +53,7 @@ public class ScoreService {
 
     @Transactional(readOnly = true)
     public List<ScoreDtos.ScoreResponse> getAllScores() {
-        return regionRepository.findAll().stream()
+        return regionRepository.findAllByType(RegionType.CAZA).stream()
                 .map(region -> computedScoreRepository.findTopByRegionRegionIdAndScenarioIsNullOrderByLastComputedAtDesc(region.getRegionId())
                         .map(this::toDto)
                         .orElse(new ScoreDtos.ScoreResponse(region.getRegionId(), null, null, null, null, null)))
