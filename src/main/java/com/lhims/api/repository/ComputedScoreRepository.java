@@ -15,4 +15,6 @@ public interface ComputedScoreRepository extends JpaRepository<ComputedScore, Lo
     List<ComputedScore> findByScenarioScenarioIdOrderByScoreIdAsc(Long scenarioId);
 
     List<ComputedScore> findByRiskCategoryAndScenarioIsNull(RiskCategory riskCategory);
+
+    List<ComputedScore> findByScenarioIsNull();
 }

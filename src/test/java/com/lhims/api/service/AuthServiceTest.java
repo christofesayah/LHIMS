@@ -23,6 +23,7 @@ import com.lhims.api.domain.entity.UserRole;
 import com.lhims.api.domain.enums.AuditActionType;
 import com.lhims.api.domain.enums.RoleCode;
 import com.lhims.api.exception.BadRequestException;
+import com.lhims.api.repository.HealthFacilityRepository;
 import com.lhims.api.repository.RevokedTokenRepository;
 import com.lhims.api.repository.RoleRepository;
 import com.lhims.api.repository.UserRepository;
@@ -52,6 +53,8 @@ class AuthServiceTest {
     @Mock
     private AuditService auditService;
     @Mock
+    private HealthFacilityRepository healthFacilityRepository;
+    @Mock
     private HttpServletRequest httpServletRequest;
 
     private AuthService authService;
@@ -66,7 +69,8 @@ class AuthServiceTest {
                 roleRepository,
                 userRoleRepository,
                 revokedTokenRepository,
-                auditService
+                auditService,
+                healthFacilityRepository
         );
     }
 

@@ -21,6 +21,10 @@ import com.lhims.api.repository.RegionRepository;
 import com.lhims.api.repository.UserRepository;
 import com.lhims.api.web.dto.ScoreDtos;
 
+import java.util.Comparator;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -114,6 +118,45 @@ public class ScoreService {
         return computedScoreRepository.findByRiskCategoryAndScenarioIsNull(RiskCategory.HIGH).stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ScoreDtos.KeyInsights getInsights() {
+        List<ComputedScore> allLatest = computedScoreRepository.findByScenarioIsNull();
+
+        // Get only the most recent score for each region
+        Map<Long, ComputedScore> latestPerRegion = allLatest.stream()
+                .collect(Collectors.toMap(
+                        s -> s.getRegion().getRegionId(),
+                        s -> s,
+                        (s1, s2) -> s1.getLastComputedAt().isAfter(s2.getLastComputedAt()) ? s1 : s2
+                ));
+
+        List<ComputedScore> latestScores = latestPerRegion.values().stream().toList();
+
+        ComputedScore highestRisk = latestScores.stream()
+                .max(Comparator.comparing(ComputedScore::getCiriScore))
+                .orElse(null);
+
+        ComputedScore highestVulnerability = latestScores.stream()
+                .max(Comparator.comparing(ComputedScore::getRviScore))
+                .orElse(null);
+
+        ComputedScore lowestAccess = latestScores.stream()
+                .min(Comparator.comparing(ComputedScore::getHaiScore))
+                .orElse(null);
+
+        Map<RiskCategory, Long> counts = latestScores.stream()
+                .collect(Collectors.groupingBy(s -> s.getRiskCategory(), Collectors.counting()));
+
+        return new ScoreDtos.KeyInsights(
+                highestRisk == null ? null : toDto(highestRisk),
+                highestVulnerability == null ? null : toDto(highestVulnerability),
+                lowestAccess == null ? null : toDto(lowestAccess),
+                counts.getOrDefault(RiskCategory.HIGH, 0L).intValue(),
+                counts.getOrDefault(RiskCategory.MEDIUM, 0L).intValue(),
+                counts.getOrDefault(RiskCategory.LOW, 0L).intValue()
+        );
     }
 
     private void createRiskChangeNotifications(Region region, RiskCategory before, RiskCategory after) {

@@ -12,7 +12,16 @@ public final class UserDtos {
     private UserDtos() {
     }
 
-    public record UserProfile(Long userId, String username, String email, Boolean active, RoleCode role, LocalDateTime createdAt) {
+    public record UserProfile(
+            Long userId,
+            String username,
+            String email,
+            Boolean active,
+            RoleCode role,
+            LocalDateTime createdAt,
+            Long assignedFacilityId,
+            Boolean isApproved
+    ) {
     }
 
     public record UpdateMyProfileRequest(@NotBlank String username, @Email @NotBlank String email) {

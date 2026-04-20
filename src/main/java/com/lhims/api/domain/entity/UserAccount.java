@@ -33,6 +33,13 @@ public class UserAccount {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "is_approved", nullable = false)
+    private Boolean isApproved = false;
+
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "facility_id")
+    private HealthFacility assignedFacility;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -89,6 +96,22 @@ public class UserAccount {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public Boolean getIsApproved() {
+        return isApproved;
+    }
+
+    public void setIsApproved(Boolean isApproved) {
+        this.isApproved = isApproved;
+    }
+
+    public HealthFacility getAssignedFacility() {
+        return assignedFacility;
+    }
+
+    public void setAssignedFacility(HealthFacility assignedFacility) {
+        this.assignedFacility = assignedFacility;
     }
 
     public LocalDateTime getCreatedAt() {

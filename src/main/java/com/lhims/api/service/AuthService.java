@@ -7,6 +7,7 @@ import com.lhims.api.domain.entity.UserRole;
 import com.lhims.api.domain.enums.AuditActionType;
 import com.lhims.api.exception.BadRequestException;
 import com.lhims.api.exception.NotFoundException;
+import com.lhims.api.repository.HealthFacilityRepository;
 import com.lhims.api.repository.RevokedTokenRepository;
 import com.lhims.api.repository.RoleRepository;
 import com.lhims.api.repository.UserRepository;
@@ -33,10 +34,12 @@ public class AuthService {
     private final UserRoleRepository userRoleRepository;
     private final RevokedTokenRepository revokedTokenRepository;
     private final AuditService auditService;
+    private final HealthFacilityRepository healthFacilityRepository;
 
     public AuthService(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
                        UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository,
-                       RevokedTokenRepository revokedTokenRepository, AuditService auditService) {
+                       RevokedTokenRepository revokedTokenRepository, AuditService auditService,
+                       HealthFacilityRepository healthFacilityRepository) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -45,6 +48,7 @@ public class AuthService {
         this.userRoleRepository = userRoleRepository;
         this.revokedTokenRepository = revokedTokenRepository;
         this.auditService = auditService;
+        this.healthFacilityRepository = healthFacilityRepository;
     }
 
     @Transactional
@@ -76,7 +80,16 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setIsActive(true);
+        // If registered by system (null actor), it's a request, so not approved yet.
+        // If registered by Ministry Official, it's auto-approved.
+        user.setIsApproved(actorUserId != null);
         user.setCreatedAt(LocalDateTime.now());
+
+        if (request.facilityId() != null) {
+            user.setAssignedFacility(healthFacilityRepository.findById(request.facilityId())
+                    .orElseThrow(() -> new NotFoundException("Facility not found")));
+        }
+
         UserAccount saved = userRepository.save(user);
 
         Role role = roleRepository.findByCode(request.role())

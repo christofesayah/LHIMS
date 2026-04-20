@@ -31,7 +31,10 @@ public class FacilityController {
     }
 
     @GetMapping
-    public List<FacilityDtos.FacilityResponse> list(@RequestParam("regionId") Long regionId) {
+    public List<FacilityDtos.FacilityResponse> list(@RequestParam(value = "regionId", required = false) Long regionId) {
+        if (regionId == null) {
+            return facilityService.getAllFacilities();
+        }
         return facilityService.getFacilitiesByRegion(regionId);
     }
 

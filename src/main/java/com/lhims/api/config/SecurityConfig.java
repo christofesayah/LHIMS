@@ -29,7 +29,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/districts/**").permitAll()
-                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/error", "/", "/favicon.ico", "/manifest.json").permitAll()
+                        .requestMatchers("/dist/**").permitAll()
+                        .requestMatchers("/{path:[^\\.]*}", "/{p1}/{p2:[^\\.]*}", "/{p1}/{p2}/{p3:[^\\.]*}").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)

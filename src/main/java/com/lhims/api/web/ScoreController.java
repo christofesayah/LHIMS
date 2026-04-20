@@ -52,4 +52,9 @@ public class ScoreController {
     public List<ScoreDtos.ScoreResponse> highRisk() {
         return scoreService.highRiskDistricts();
     }
+
+    @GetMapping("/scores/insights")
+    public ScoreDtos.KeyInsights getInsights() {
+        return scoreService.getInsights();
+    }
 }

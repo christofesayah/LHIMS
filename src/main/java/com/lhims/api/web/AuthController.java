@@ -32,6 +32,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, httpServletRequest));
     }
 
+    @PostMapping("/request-account")
+    public ResponseEntity<Void> requestAccount(@Valid @RequestBody AuthDtos.RegisterRequest request,
+                                               HttpServletRequest httpServletRequest) {
+        authService.register(request, null, httpServletRequest);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/register")
     @PreAuthorize("hasRole('MINISTRY_OFFICIAL')")
     public ResponseEntity<Void> register(@Valid @RequestBody AuthDtos.RegisterRequest request,

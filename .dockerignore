@@ -1,0 +1,11 @@
+**/node_modules/
+target/
+dist/
+.git/
+.idea/
+*.log
+.env
+
+# Python Analytics exclusions
+analytics-service/.venv/
+analytics-service/__pycache__/

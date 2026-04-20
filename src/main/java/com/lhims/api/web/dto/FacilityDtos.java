@@ -33,6 +33,7 @@ public final class FacilityDtos {
     }
 
     public record CapacityResponse(LocalDate reportingDate, Integer totalBeds, Integer icuBeds,
-                                   Integer doctorsCount, Integer nursesCount, OperationalStatus operationalStatus) {
+                                   Integer doctorsCount, Integer nursesCount, OperationalStatus operationalStatus,
+                                   String updatedBy) {
     }
 }

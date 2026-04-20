@@ -1,19 +1,25 @@
 package com.lhims.api.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.lhims.api.domain.entity.AuditLog;
 import com.lhims.api.domain.entity.FacilityCapacity;
 import com.lhims.api.domain.entity.HealthFacility;
 import com.lhims.api.domain.enums.AuditActionType;
 import com.lhims.api.exception.NotFoundException;
+import com.lhims.api.repository.AuditLogRepository;
 import com.lhims.api.repository.FacilityCapacityRepository;
 import com.lhims.api.repository.HealthFacilityRepository;
 import com.lhims.api.repository.RegionRepository;
+import com.lhims.api.repository.UserRepository;
 import com.lhims.api.web.dto.FacilityDtos;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class FacilityService {
@@ -22,20 +28,31 @@ public class FacilityService {
     private final FacilityCapacityRepository facilityCapacityRepository;
     private final RegionRepository regionRepository;
     private final AuditService auditService;
+    private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
 
     public FacilityService(HealthFacilityRepository healthFacilityRepository,
                            FacilityCapacityRepository facilityCapacityRepository,
                            RegionRepository regionRepository,
-                           AuditService auditService) {
+                           AuditService auditService,
+                           AuditLogRepository auditLogRepository,
+                           UserRepository userRepository) {
         this.healthFacilityRepository = healthFacilityRepository;
         this.facilityCapacityRepository = facilityCapacityRepository;
         this.regionRepository = regionRepository;
         this.auditService = auditService;
+        this.auditLogRepository = auditLogRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
     public List<FacilityDtos.FacilityResponse> getFacilitiesByRegion(Long regionId) {
         return healthFacilityRepository.findByRegionRegionId(regionId).stream().map(this::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FacilityDtos.FacilityResponse> getAllFacilities() {
+        return healthFacilityRepository.findAll().stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)
@@ -120,9 +137,23 @@ public class FacilityService {
     private FacilityDtos.FacilityResponse toDto(HealthFacility facility) {
         FacilityCapacity latest = facilityCapacityRepository.findTopByFacilityFacilityIdOrderByReportingDateDesc(facility.getFacilityId())
                 .orElse(null);
+
+        String updatedBy = "System";
+        if (latest != null) {
+            // Find the audit log that created this capacity record entry
+            var audits = auditLogRepository.findByEntityIdOrderByCreatedAtDesc(
+                    String.valueOf(facility.getFacilityId()), PageRequest.of(0, 1));
+            if (!audits.isEmpty()) {
+                AuditLog log = audits.getContent().get(0);
+                if (log.getActorUser() != null) {
+                    updatedBy = log.getActorUser().getUsername();
+                }
+            }
+        }
+
         FacilityDtos.CapacityResponse capacity = latest == null ? null : new FacilityDtos.CapacityResponse(
                 latest.getReportingDate(), latest.getTotalBeds(), latest.getIcuBeds(), latest.getDoctorsCount(),
-                latest.getNursesCount(), latest.getOperationalStatus()
+                latest.getNursesCount(), latest.getOperationalStatus(), updatedBy
         );
         return new FacilityDtos.FacilityResponse(
                 facility.getFacilityId(),

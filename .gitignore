@@ -1,65 +1,84 @@
-HELP.md
-target/
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDEs (IntelliJ, VSCode, Eclipse)
+.idea/
 *.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+*.iws
 .vscode/
+.project
+.classpath
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Data sources (raw / do not commit)
-# Raw source files: spreadsheets, CSVs, GeoJSON, shapefiles, geopackages
-/data/**/*.csv
-/data/**/*.xls
-/data/**/*.xlsx
-/data/**/*.json
-/data/**/*.geojson
-/data/**/*.shp
-/data/**/*.gpkg
+# ----------------------------------------------------------------------------
+# Backend: Spring Boot / Maven / Java
+# ----------------------------------------------------------------------------
+target/
+*.class
+*.log
+*.jar
+*.war
 
-# Top-level data files
-*.csv
-*.xls
-*.xlsx
-*.json
-*.geojson
+# Maven wrapper specific ignores
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
 
-# Allow curated processed outputs or importer scripts if needed
-!data/**/processed/
-!data/**/final/
-!data/**/imports/*.py
-
-# Byte-compiled Python files / caches
+# ----------------------------------------------------------------------------
+# Frontend: React / Vite / Node.js
+# ----------------------------------------------------------------------------
+**/node_modules/
+**/dist/
+dist-ssr/
+*.local
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+coverage/
+# ----------------------------------------------------------------------------
+# Analytics: Python / FastAPI
+# ----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
-*.pyc
-# Explicit compiled file example
-main.cpython-313.pyc
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
 
+# ----------------------------------------------------------------------------
+# Data Files, Docker & AI Context
+# ----------------------------------------------------------------------------
+*.csv
+*.geojson
+*.json
+*.xlsx
+*.png
+*.pdf
+
+# (Keep essential Node/React config files so your app doesn't break for others)
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.node.json
+!tsconfig.app.json
+
+gemini.md
+pgdata/

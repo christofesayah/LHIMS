@@ -99,7 +99,9 @@ public class UserService {
                 user.getEmail(),
                 user.getIsActive(),
                 role,
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getAssignedFacility() != null ? user.getAssignedFacility().getFacilityId() : null,
+                user.getIsApproved()
         );
     }
 }

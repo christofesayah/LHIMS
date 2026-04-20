@@ -16,4 +16,14 @@ public final class ScoreDtos {
 
     public record ScoreHistoryResponse(Long regionId, List<ScoreResponse> history) {
     }
+
+    public record KeyInsights(
+            ScoreResponse highestRisk,
+            ScoreResponse highestVulnerability,
+            ScoreResponse lowestAccess,
+            Integer totalHighRiskDistricts,
+            Integer totalMediumRiskDistricts,
+            Integer totalLowRiskDistricts
+    ) {
+    }
 }
