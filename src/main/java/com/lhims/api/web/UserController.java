@@ -58,6 +58,12 @@ public class UserController {
         userService.updateStatus(id, request, securitySupport.currentUser().userId(), httpServletRequest);
     }
 
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('MINISTRY_OFFICIAL')")
+    public void approve(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        userService.approveUser(id, securitySupport.currentUser().userId(), httpServletRequest);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('MINISTRY_OFFICIAL')")
     public void delete(@PathVariable Long id, HttpServletRequest httpServletRequest) {

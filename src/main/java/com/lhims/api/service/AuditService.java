@@ -41,7 +41,7 @@ public class AuditService {
     public void log(Long actorUserId, Long targetUserId, Long regionId, AuditActionType actionType, String entityName,
                     String entityId, String oldValue, String newValue, HttpServletRequest request) {
         AuditLog log = new AuditLog();
-        UserAccount actor = userRepository.findById(actorUserId).orElse(null);
+        UserAccount actor = actorUserId == null ? null : userRepository.findById(actorUserId).orElse(null);
         UserAccount target = targetUserId == null ? null : userRepository.findById(targetUserId).orElse(null);
         Region region = regionId == null ? null : regionRepository.findById(regionId).orElse(null);
         log.setActorUser(actor);

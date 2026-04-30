@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { KeyIcon, EyeIcon, EyeOffIcon, ShieldCheckIcon, MailIcon } from "lucide-react";
+import { KeyIcon, EyeIcon, EyeOffIcon, ShieldCheckIcon } from "lucide-react";
+import { useApi } from "../hooks/useApi";
 
 export default function ChangePassword() {
-  const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -13,17 +13,13 @@ export default function ChangePassword() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [error, setError] = useState("");
+  const api = useApi();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     // Validation
-    if (!email) {
-      setError("Email is required");
-      return;
-    }
-
     if (!oldPassword) {
       setError("Old password is required");
       return;
@@ -41,16 +37,22 @@ export default function ChangePassword() {
 
     setIsSaving(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await api.post('/api/auth/change-password', {
+        oldPassword,
+        newPassword,
+      });
+
       setIsSaving(false);
       setSavedSuccess(true);
-      setEmail("");
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => setSavedSuccess(false), 3000);
-    }, 1000);
+    } catch (err: any) {
+      setIsSaving(false);
+      setError(err.message || "Failed to change password");
+    }
   };
 
   return (
@@ -70,27 +72,6 @@ export default function ChangePassword() {
         className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
       >
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-slate-700 mb-2"
-            >
-              <div className="flex items-center gap-2">
-                <MailIcon size={16} />
-                Email Address
-              </div>
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent"
-              placeholder="Enter your email address"
-              required
-            />
-          </div>
-
           <div>
             <label
               htmlFor="oldPassword"
@@ -207,7 +188,7 @@ export default function ChangePassword() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isSaving || (confirmPassword && newPassword !== confirmPassword)}
+              disabled={isSaving || !!(confirmPassword && newPassword !== confirmPassword)}
               className="flex items-center gap-2 px-6 py-3 bg-[#8B3A3A] hover:bg-[#6B2A2A] disabled:bg-gray-400 text-white font-medium rounded-lg transition shadow-lg shadow-[#8B3A3A]/20"
             >
               <KeyIcon size={18} />

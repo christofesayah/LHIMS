@@ -42,6 +42,8 @@ public class UserService {
     @Transactional
     public UserDtos.UserProfile updateMe(Long userId, UserDtos.UpdateMyProfileRequest request) {
         UserAccount user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setUsername(request.username());
         user.setEmail(request.email());
         return toProfile(userRepository.save(user));
@@ -80,6 +82,15 @@ public class UserService {
     }
 
     @Transactional
+    public void approveUser(Long userId, Long actorUserId, HttpServletRequest httpServletRequest) {
+        UserAccount user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        user.setIsApproved(true);
+        userRepository.save(user);
+        auditService.log(actorUserId, userId, AuditActionType.UPDATE, "users", String.valueOf(userId),
+                null, "APPROVE_USER", httpServletRequest);
+    }
+
+    @Transactional
     public void deleteUser(Long userId, Long actorUserId, HttpServletRequest httpServletRequest) {
         UserAccount user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         user.setIsActive(false);
@@ -96,6 +107,8 @@ public class UserService {
         return new UserDtos.UserProfile(
                 user.getUserId(),
                 user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getEmail(),
                 user.getIsActive(),
                 role,

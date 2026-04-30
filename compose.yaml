@@ -48,6 +48,7 @@ services:
       DB_NAME: ${DB_NAME:-lhims_db}
       DB_USER: ${DB_USER:-lhims_user}
       DB_PASS: ${DB_PASS:-lhims_pass}
+      SPRING_FLYWAY_REPAIR_ON_MIGRATE: "true"
       ANALYTICS_BASE_URL: http://analytics:8000
       APP_JWT_SECRET: ${APP_JWT_SECRET:-lhims-jwt-secret-key-min-32-chars!!}
       APP_JWT_EXPIRATION_SECONDS: ${APP_JWT_EXPIRATION_SECONDS:-86400}

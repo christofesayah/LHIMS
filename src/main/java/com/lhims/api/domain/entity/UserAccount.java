@@ -1,16 +1,18 @@
 package com.lhims.api.domain.entity;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -18,45 +20,37 @@ public class UserAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(nullable = false)
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(nullable = false)
     private String passwordHash;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive;
 
-    @Column(name = "is_approved", nullable = false)
-    private Boolean isApproved = false;
+    private Boolean isApproved;
 
-    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "facility_id")
-    private HealthFacility assignedFacility;
-
-    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "createdByUser")
-    private List<SimulationScenario> createdScenarios = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_facility_id")
+    private HealthFacility assignedFacility;
 
     @OneToMany(mappedBy = "user")
-    private List<UserRole> userRoles = new ArrayList<>();
+    private List<UserRole> userRoles;
 
-    @OneToMany(mappedBy = "assignedByUser")
-    private List<UserRole> assignedRoles = new ArrayList<>();
-
-    @OneToMany(mappedBy = "actorUser")
-    private List<AuditLog> performedAuditLogs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "targetUser")
-    private List<AuditLog> affectedAuditLogs = new ArrayList<>();
+    // Getters and Setters
 
     public Long getUserId() {
         return userId;
@@ -64,6 +58,22 @@ public class UserAccount {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getUsername() {
@@ -94,24 +104,16 @@ public class UserAccount {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setIsActive(Boolean active) {
+        isActive = active;
     }
 
     public Boolean getIsApproved() {
         return isApproved;
     }
 
-    public void setIsApproved(Boolean isApproved) {
-        this.isApproved = isApproved;
-    }
-
-    public HealthFacility getAssignedFacility() {
-        return assignedFacility;
-    }
-
-    public void setAssignedFacility(HealthFacility assignedFacility) {
-        this.assignedFacility = assignedFacility;
+    public void setIsApproved(Boolean approved) {
+        isApproved = approved;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -122,12 +124,12 @@ public class UserAccount {
         this.createdAt = createdAt;
     }
 
-    public List<SimulationScenario> getCreatedScenarios() {
-        return createdScenarios;
+    public HealthFacility getAssignedFacility() {
+        return assignedFacility;
     }
 
-    public void setCreatedScenarios(List<SimulationScenario> createdScenarios) {
-        this.createdScenarios = createdScenarios;
+    public void setAssignedFacility(HealthFacility assignedFacility) {
+        this.assignedFacility = assignedFacility;
     }
 
     public List<UserRole> getUserRoles() {
@@ -136,32 +138,5 @@ public class UserAccount {
 
     public void setUserRoles(List<UserRole> userRoles) {
         this.userRoles = userRoles;
-    }
-
-    public List<UserRole> getAssignedRoles() {
-        return assignedRoles;
-    }
-
-    public void setAssignedRoles(List<UserRole> assignedRoles) {
-        this.assignedRoles = assignedRoles;
-    }
-
-    public List<AuditLog> getPerformedAuditLogs() {
-        return performedAuditLogs;
-    }
-
-    public void setPerformedAuditLogs(List<AuditLog> performedAuditLogs) {
-        this.performedAuditLogs = performedAuditLogs;
-    }
-
-    public List<AuditLog> getAffectedAuditLogs() {
-        return affectedAuditLogs;
-    }
-
-    public void setAffectedAuditLogs(List<AuditLog> affectedAuditLogs) {
-        this.affectedAuditLogs = affectedAuditLogs;
-    }
-
-    public UserAccount() {
     }
 }

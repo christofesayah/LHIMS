@@ -35,7 +35,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 user.getUserId(),
                 user.getEmail(),
                 user.getPasswordHash(),
-                Boolean.TRUE.equals(user.getIsActive()),
+                Boolean.TRUE.equals(user.getIsActive()) && Boolean.TRUE.equals(user.getIsApproved()),
                 List.of(new SimpleGrantedAuthority(authority))
         );
     }

@@ -33,19 +33,19 @@ public class AuthController {
     }
 
     @PostMapping("/request-account")
-    public ResponseEntity<Void> requestAccount(@Valid @RequestBody AuthDtos.RegisterRequest request,
+    public ResponseEntity<AuthDtos.LoginResponse> requestAccount(@Valid @RequestBody AuthDtos.RegisterRequest request,
                                                HttpServletRequest httpServletRequest) {
-        authService.register(request, null, httpServletRequest);
-        return ResponseEntity.ok().build();
+        AuthDtos.LoginResponse response = authService.register(request, null, httpServletRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     @PreAuthorize("hasRole('MINISTRY_OFFICIAL')")
-    public ResponseEntity<Void> register(@Valid @RequestBody AuthDtos.RegisterRequest request,
+    public ResponseEntity<AuthDtos.LoginResponse> register(@Valid @RequestBody AuthDtos.RegisterRequest request,
                                          HttpServletRequest httpServletRequest) {
         Long actorUserId = securitySupport.currentUser().userId();
-        authService.register(request, actorUserId, httpServletRequest);
-        return ResponseEntity.ok().build();
+        AuthDtos.LoginResponse response = authService.register(request, actorUserId, httpServletRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/change-password")

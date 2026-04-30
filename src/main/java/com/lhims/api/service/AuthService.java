@@ -1,10 +1,19 @@
 package com.lhims.api.service;
 
+import java.time.LocalDateTime;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.lhims.api.domain.entity.RevokedToken;
 import com.lhims.api.domain.entity.Role;
 import com.lhims.api.domain.entity.UserAccount;
 import com.lhims.api.domain.entity.UserRole;
 import com.lhims.api.domain.enums.AuditActionType;
+import com.lhims.api.domain.enums.RoleCode;
 import com.lhims.api.exception.BadRequestException;
 import com.lhims.api.exception.NotFoundException;
 import com.lhims.api.repository.HealthFacilityRepository;
@@ -14,14 +23,8 @@ import com.lhims.api.repository.UserRepository;
 import com.lhims.api.repository.UserRoleRepository;
 import com.lhims.api.security.JwtUtil;
 import com.lhims.api.web.dto.AuthDtos;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
@@ -70,19 +73,24 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(AuthDtos.RegisterRequest request, Long actorUserId, HttpServletRequest httpServletRequest) {
+    public AuthDtos.LoginResponse register(AuthDtos.RegisterRequest request, Long actorUserId, HttpServletRequest httpServletRequest) {
         if (userRepository.existsByEmail(request.email())) {
             throw new BadRequestException("Email already exists");
         }
+        if (userRepository.existsByUsername(request.username())) {
+            throw new BadRequestException("Username already exists");
+        }
 
         UserAccount user = new UserAccount();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setUsername(request.username());
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setIsActive(true);
-        // If registered by system (null actor), it's a request, so not approved yet.
+        // If registered by system (null actor), it's a request, so not approved yet, unless it's a public user.
         // If registered by Ministry Official, it's auto-approved.
-        user.setIsApproved(actorUserId != null);
+        user.setIsApproved(actorUserId != null || request.role() == RoleCode.PUBLIC);
         user.setCreatedAt(LocalDateTime.now());
 
         if (request.facilityId() != null) {
@@ -105,6 +113,13 @@ public class AuthService {
 
         auditService.log(actorUserId, saved.getUserId(), AuditActionType.CREATE, "users", String.valueOf(saved.getUserId()),
                 null, "REGISTER", httpServletRequest);
+
+        // Auto-login logic: Generate token if the user is auto-approved (Public or Admin-created)
+        if (Boolean.TRUE.equals(saved.getIsApproved())) {
+            String token = jwtUtil.generateToken(saved.getUserId(), saved.getEmail(), role.getCode());
+            return new AuthDtos.LoginResponse(token, role.getCode(), saved.getUserId());
+        }
+        return null;
     }
 
     @Transactional

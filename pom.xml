@@ -126,6 +126,15 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <url>jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5400}/${DB_NAME:lhims_db}</url>
+                    <user>${DB_USER:lhims_user}</user>
+                    <password>${DB_PASS:lhims_pass}</password>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

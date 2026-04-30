@@ -1,35 +1,35 @@
 package com.lhims.api.web.dto;
 
-import com.lhims.api.domain.enums.RoleCode;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 
-public final class UserDtos {
+import com.lhims.api.domain.enums.RoleCode;
 
-    private UserDtos() {
+public class UserDtos {
+
+    public record UpdateMyProfileRequest(
+            String firstName,
+            String lastName,
+            String username,
+            String email
+    ) {
+    }
+
+    public record UpdateUserRoleRequest(RoleCode role) {
+    }
+
+    public record UpdateUserStatusRequest(boolean active) {
     }
 
     public record UserProfile(
             Long userId,
             String username,
+            String firstName,
+            String lastName,
             String email,
-            Boolean active,
+            Boolean isActive,
             RoleCode role,
             LocalDateTime createdAt,
             Long assignedFacilityId,
             Boolean isApproved
-    ) {
-    }
-
-    public record UpdateMyProfileRequest(@NotBlank String username, @Email @NotBlank String email) {
-    }
-
-    public record UpdateUserRoleRequest(@NotNull RoleCode role) {
-    }
-
-    public record UpdateUserStatusRequest(@NotNull Boolean active) {
-    }
+    ) {}
 }

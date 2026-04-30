@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Building2, Hospital, Globe, EyeIcon, EyeOffIcon, CheckCircle, Clock } from "lucide-react";
@@ -20,8 +20,12 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("PUBLIC");
+  const [facilities, setFacilities] = useState<{ facilityId: number; name: string }[]>([]);
+  const [selectedFacility, setSelectedFacility] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
@@ -32,28 +36,63 @@ export default function Login() {
   const { login } = useAuth();
   const api = useApi();
 
+  useEffect(() => {
+    if (isRegister && selectedRole === 'HOSPITAL_ADMIN') {
+      const fetchFacilities = async () => {
+        setIsLoading(true);
+        try {
+          const response = await api.get('/api/facilities');
+          setFacilities(response || []);
+        } catch (err) {
+          setError("Could not load health facilities. Please try again later.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchFacilities();
+    }
+  }, [isRegister, selectedRole, api]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isRegister && selectedRole === 'HOSPITAL_ADMIN' && !selectedFacility) {
+      setError("Please select a health facility for the Hospital Admin role.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
       if (isRegister) {
-        if (email && password && confirmPassword && fullName && password === confirmPassword) {
-          await api.post("/api/auth/request-account", {
-            username: fullName,
+        if (email && password && confirmPassword && firstName && lastName && username && password === confirmPassword) {
+          const payload: any = {
+            firstName,
+            lastName,
+            username,
             email,
             password,
             role: selectedRole,
-          });
+          };
+          if (selectedRole === 'HOSPITAL_ADMIN') {
+            payload.facilityId = parseInt(selectedFacility, 10);
+          }
+          const response = await api.post("/api/auth/request-account", payload);
 
           if (selectedRole !== "PUBLIC") {
             setNeedsApproval(true);
           }
           setRegistrationSuccess(true);
           
-          if (selectedRole === "PUBLIC") {
-            setTimeout(() => navigate("/"), 3000);
+          if (selectedRole === "PUBLIC" && response && response.token) {
+            setTimeout(() => {
+              login(response.token, response.role, response.userId, email);
+              navigate("/app/dashboard");
+            }, 2000);
+          } else if (selectedRole === "PUBLIC") {
+             // Fallback if no token returned
+             setTimeout(() => resetToLogin(), 3000);
           }
         } else {
           setError("Please fill all fields and ensure passwords match");
@@ -88,8 +127,12 @@ export default function Login() {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setFullName("");
+    setFirstName("");
+    setLastName("");
+    setUsername("");
     setSelectedRole("PUBLIC");
+    setSelectedFacility("");
+    setFacilities([]);
     setError("");
   };
 
@@ -140,7 +183,7 @@ export default function Login() {
                   LHIMS Portal
                 </h1>
                 <p className="text-slate-600">
-                  Lebanon Health Impact Management System
+                Lebanon Health Inequality Management System
                 </p>
               </div>
 
@@ -219,20 +262,56 @@ export default function Login() {
                   <form onSubmit={handleSubmit} className="space-y-5">
                 {isRegister && (
                   <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="firstName"
+                          className="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                          First Name
+                        </label>
+                        <input
+                          id="firstName"
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition"
+                          placeholder="Enter your first name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lastName"
+                          className="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                          Last Name
+                        </label>
+                        <input
+                          id="lastName"
+                          type="text"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition"
+                          placeholder="Enter your last name"
+                          required
+                        />
+                      </div>
+                    </div>
                     <div>
                       <label
-                        htmlFor="fullName"
+                        htmlFor="username"
                         className="block text-sm font-medium text-slate-700 mb-2"
                       >
-                        Full Name
+                        Username
                       </label>
                       <input
-                        id="fullName"
+                        id="username"
                         type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition"
-                        placeholder="Enter your full name"
+                        placeholder="Choose a username"
                         required
                       />
                     </div>
@@ -248,8 +327,9 @@ export default function Login() {
                         id="role"
                         value={selectedRole}
                         onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition bg-white"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition bg-white disabled:bg-slate-100 disabled:text-slate-500"
                         required
+                        disabled={selectedPortal !== 'public'}
                       >
                         {roles.map((role) => (
                           <option key={role.value} value={role.value}>
@@ -264,6 +344,31 @@ export default function Login() {
                           : "You will have immediate access upon registration."}
                       </p>
                     </div>
+
+                    {selectedRole === 'HOSPITAL_ADMIN' && (
+                      <div>
+                        <label
+                          htmlFor="facility"
+                          className="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                          Health Facility
+                        </label>
+                        <select
+                          id="facility"
+                          value={selectedFacility}
+                          onChange={(e) => setSelectedFacility(e.target.value)}
+                          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7DD3FC] focus:border-transparent transition bg-white"
+                          required
+                        >
+                          <option value="" disabled>Select a facility</option>
+                          {facilities.map((facility) => (
+                            <option key={facility.facilityId} value={facility.facilityId}>
+                              {facility.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -394,11 +499,25 @@ export default function Login() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setIsRegister(!isRegister);
+                        const nextIsRegister = !isRegister;
+                        setIsRegister(nextIsRegister);
                         setEmail("");
                         setPassword("");
                         setConfirmPassword("");
-                        setFullName("");
+                        setFirstName("");
+                        setLastName("");
+                        setUsername("");
+                        setError("");
+
+                        if (nextIsRegister) {
+                          if (selectedPortal === "ministry") {
+                            setSelectedRole("MINISTRY_OFFICIAL");
+                          } else if (selectedPortal === "hospital") {
+                            setSelectedRole("HOSPITAL_ADMIN");
+                          } else {
+                            setSelectedRole("PUBLIC");
+                          }
+                        }
                       }}
                       className="text-[#8B3A3A] hover:text-[#6B2A2A] font-semibold hover:underline cursor-pointer bg-transparent border-none text-sm ml-1"
                     >
@@ -454,7 +573,7 @@ export default function Login() {
                     <div className="space-y-4">
                       <p className="text-slate-600">
                         Your account has been created successfully. Redirecting you to the
-                        dashboard...
+                        login screen...
                       </p>
                       <div className="flex justify-center">
                         <div className="w-8 h-8 border-4 border-[#7DD3FC] border-t-[#8B3A3A] rounded-full animate-spin"></div>

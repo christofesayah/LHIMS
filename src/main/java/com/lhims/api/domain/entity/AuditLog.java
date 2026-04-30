@@ -25,7 +25,7 @@ public class AuditLog {
     private Long auditId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "actor_user_id", nullable = false)
+    @JoinColumn(name = "actor_user_id")
     private UserAccount actorUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
